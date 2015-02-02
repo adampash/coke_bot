@@ -30,16 +30,16 @@ class TextToTweet
     text.chomp.split(/(?<=[?!.])/).map(&:strip)
   end
 
-  def self.split_long_by_middle(sentences)
-    new_sentences = []
+  def self.split_long_into_words(sentences)
+    words = []
     sentences.each do |sentence|
       if sentence.length > 140
-        new_sentences.push(sentence.split(" ")).flatten!
+        words.push(sentence.split(" "))
       else
-        new_sentences.push sentence
+        words.push sentence
       end
     end
-    new_sentences
+    words.flatten
   end
 
   def self.split_long_by_punct(sentences)
@@ -57,28 +57,22 @@ class TextToTweet
 
   def self.combine_sentences(sentences)
     new_sentences = []
-    # length = sentences.length
-    sentences.each_with_index do |sentence, index|
-      unless sentences[index+1].nil?
-        if sentences[index].length + sentences[index+1].length < 140
-          new_sentence = "#{sentences.delete_at index} #{sentences[index]}"
-          new_sentences.push new_sentence
-        else
-          new_sentences.push sentence
-        end
+    old_sentences = sentences
+    index = 0
+    until old_sentences[index+1].nil?
+      # old_sentence = old_sentences.delete_at(index)
+      new_sentence = "#{old_sentences[index]} #{old_sentences[index+1]}"
+      if new_sentence.length < 140
+        old_sentences.delete_at(index)
+        old_sentences[index] = new_sentence
+        new_sentences[index] = new_sentence
+      else
+        new_sentences[index] = old_sentences[index]
+        index += 1
       end
     end
+    new_sentences[index] = old_sentences[index]
     new_sentences
-    # return sentences if sentences[index+1].nil?
-    # if sentences[index].length + sentences[index+1].length < 140
-    #   sentences[index] = "#{sentences.delete_at index} #{sentences[index]}"
-    #   combine_sentences(sentences, index)
-    # else
-    #   # puts 'shifting'
-    #   # sentences[index] = sentences.shift
-    #   combine_sentences(sentences, index + 1)
-    # end
   end
-
 
 end

@@ -1,7 +1,8 @@
 require_relative '../../lib/text_to_tweet'
+require_relative '../spec_helper'
 
 describe TextToTweet do
-  let(:file) {File.new "#{File.dirname(__FILE__)}/../../data/meinkampf.txt"}
+  let(:file) {File.new "#{File.dirname(__FILE__)}/../../data/data.txt"}
 
   it "instantiates itself with a new piece of text" do
     @text_to_tweet = TextToTweet.new "#{File.dirname(__FILE__)}/../../data/data.txt"
@@ -25,36 +26,38 @@ describe TextToTweet do
       these_sentences = TextToTweet.get_sentences(line)
       sentences << these_sentences unless these_sentences.empty?
     end
-    splits = TextToTweet.split_long_by_punct(sentences.flatten)
-    splits = TextToTweet.split_long_by_middle(splits)
+    punc_splits = TextToTweet.split_long_by_punct(sentences.flatten)
+    splits = TextToTweet.split_long_into_words(punc_splits)
     combined = TextToTweet.combine_sentences(splits)
-    require 'pry'; binding.pry
     combined.each_with_index do |sentence, index|
       expect(index).to be index
-      if sentence.length > 140
+      expect(sentence.length).to be <= 140
+      if sentence.length < 50
         require 'pry'; binding.pry
       end
-      # expect(sentence.length).to be < 140
     end
 
+    text = TextToTweet.kill_bum_breaks file
   end
 
+  it "combines array elements until the combination is > 140 chars" do
+    a = ['hi', 'there', 'my', 'good', 'friend', 'hi', 'there', 'my', 'good', 'friend', 'hi', 'there', 'my', 'good', 'friend', 'hi', 'there', 'my', 'good', 'friend', 'hi', 'there', 'my', 'good', 'friend', 'hi', 'there', 'my', 'good', 'friend', 'hi', 'there', 'my', 'good', 'friend', 'hi', 'there', 'my', 'good', 'friend', 'hi', 'there', 'my', 'good', 'friend', 'hi', 'there', 'my', 'good', 'friend']
+    combined = TextToTweet.combine_sentences(a)
+    expect(combined.length).to eq 2
+    combined.each do |sentence|
+      expect(sentence.length).to be <= 140
+    end
+  end
 
-  # it "parses a blob of text into sentences" do
-  #   sentences = TextToTweet.get_sentences("This is a very short sentence. This is even shorter.")
-  #   expect(sentences.length).to eq 2
-  # end
+  it "splits long sentences into an array of words", :focus => true do
+    s = "this is a long sentence that is over 140 chars and therefor will be split into an array of words that is made up of every word in this sentence"
+    a = TextToTweet.split_long_into_words([s])
+    expect(a.length).to eq 30
 
-  # it "splits a blob of text into words and then returns longest sentence" do
-  #   text = "This is a very short sentence. This is even shorter."
-  #   tweets = TextToTweet.get_tweets(text)
-  #   expect(tweets.length).to eq 1
-
-  #   text = "This is a very short sentence. This is even shorter. And this is going to be a very long sentence that will need to be its own separate tweet assuming everything goes as planned."
-  #   tweets = TextToTweet.get_tweets(text)
-  #   require 'pry'; binding.pry
-  #   expect(tweets.length).to eq 2
-  # end
+    combined = TextToTweet.combine_sentences(a)
+    expect(combined.length).to eq 2
+    expect(combined.first.length).to be <= 140
+  end
 
 end
 
