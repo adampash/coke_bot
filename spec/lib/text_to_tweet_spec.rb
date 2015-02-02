@@ -32,12 +32,11 @@ describe TextToTweet do
     combined.each_with_index do |sentence, index|
       expect(index).to be index
       expect(sentence.length).to be <= 140
-      if sentence.length < 50
-        require 'pry'; binding.pry
-      end
     end
 
-    text = TextToTweet.kill_bum_breaks file
+    # File.open("tweet_friendly.txt", "w+") do |f|
+    #   f.puts(combined)
+    # end
   end
 
   it "combines array elements until the combination is > 140 chars" do
